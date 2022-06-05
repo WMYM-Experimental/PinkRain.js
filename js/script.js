@@ -36,8 +36,26 @@ class Drop {
 
     update() {
         // this method makes the drop fall
-        this.y = this.y + getRandomFloat(1, 5);
+        this.y = this.y + getRandomFloat(1, 3);
+
+        this.x += Math.sin(Math.PI / 2) * 2;
+        this.y += Math.cos(Math.PI / 2) * 2;
+
+        if (
+            this.y * (this.height * 100 + 1) > this.height * 1000 &&
+            Math.random() > 0.95
+        ) {
+            this.y = 1;
+        } else {
+            this.y += 1;
+        }
+
         if (this.y > canvas.height) {
+            this.y = 1;
+        }
+
+        if (this.x > canvas.width || this.x < 0) {
+            this.x = getRandomFloat(0, canvas.width);
             this.y = -1;
         }
 
