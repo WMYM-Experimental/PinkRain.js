@@ -5,7 +5,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const drops = [];
-const colors = ["#f08080", "#f4978e"];
+const colors = ["#ff006e", "#f72585"];
 
 const getRandomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -16,13 +16,17 @@ const getRandomFloat = (min, max) => {
 };
 
 class Drop {
-    constructor(x, y, z, width, height, color) {
+    constructor(x, y, z, width, height) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.width = width;
         this.height = height;
-        this.color = color;
+        if (this.z > 8) {
+            this.color = colors[0];
+        } else {
+            this.color = colors[1];
+        }
     }
 
     draw() {
@@ -30,61 +34,50 @@ class Drop {
         ctx.lineWidth = this.width;
         ctx.fillStyle = this.color;
         ctx.beginPath();
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 20;
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.stroke();
     }
 
     update() {
         // this method makes the drop fall
-        this.y = this.y + getRandomFloat(1, 3);
+        this.y = this.y + this.z;
 
-        this.x += Math.sin(Math.PI / 2) * 2;
-        this.y += Math.cos(Math.PI / 2) * 2;
-
-        if (
-            this.y * (this.height * 100 + 1) > this.height * 1000 &&
-            Math.random() > 0.95
-        ) {
-            this.y = 1;
+        // move depends on random value
+        if (Math.random() > 0.5) {
+            this.x += Math.sin(Math.PI / 2) * 3;
         } else {
-            this.y += 1;
+            this.x -= Math.sin(-Math.PI / 2) * 3;
         }
 
+        // check collision with the lateral walls
+        if (this.x > canvas.width) {
+            this.x = 0;
+        } else if (this.x < 0) {
+            this.x = canvas.width;
+        }
+
+        // check collision with the bottom wall
         if (this.y > canvas.height) {
             this.y = 1;
         }
-
-        if (this.x > canvas.width || this.x < 0) {
-            this.x = getRandomFloat(0, canvas.width);
-            this.y = -1;
-        }
-
-        /*
-        if (Math.random() > 0.5) {
-            this.x = this.x + 1;
-        } else {
-            this.x = this.x - 1;
-        }
-        */
 
         this.draw();
     }
 }
 
-const d = new Drop(canvas.width / 2, 0, 10, 20, "#00ff00");
-
 const init = () => {
-    for (let index = 0; index < 25; index++) {
-        drops.push(
-            new Drop(
-                getRandomInt(0, canvas.width),
-                0,
-                0,
-                getRandomFloat(1, 2),
-                getRandomFloat(10, 15),
-                colors[getRandomInt(0, 1)]
-            )
+    // this method initializes the drops
+    for (let i = 0; i < canvas.width; i++) {
+        const drop = new Drop(
+            i,
+            getRandomInt(0, canvas.height),
+            getRandomInt(3, 13),
+            getRandomFloat(0.5, 1.5),
+            getRandomInt(10, 15)
         );
+        drops.push(drop);
     }
 };
 
@@ -95,6 +88,13 @@ const animate = () => {
     });
     requestAnimationFrame(animate);
 };
+
+window.addEventListener("resize", () => {
+    drops.splice(0, drops.length);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    init();
+});
 
 init();
 animate();
